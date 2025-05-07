@@ -200,6 +200,48 @@ async def generate_simple(request: SimpleGenerationRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"応答の生成中にエラーが発生しました: {str(e)}")
 
+class JapaneseGenerationRequest(BaseModel):
+    topic: Optional[str] = "自然"
+    max_new_tokens: Optional[int] = 100
+    temperature: Optional[float] = 0.7
+    top_p: Optional[float] = 0.9
+    do_sample: Optional[bool] = True
+
+@app.post("/generate-japanese", response_model=GenerationResponse)
+async def generate_japanese_text(request: JapaneseGenerationRequest):
+
+    global model
+
+    if model is None:
+        load_model_task()
+        if model is None:
+            raise HTTPException(status_code=503, detail="モデルがロードされていません")
+
+    try:
+        prompt = f"次のテーマに沿って日本語の短い文章を作成してください：『{request.topic}』\n\n文章："
+        start_time = time.time()
+
+        outputs = model(
+            prompt,
+            max_new_tokens=request.max_new_tokens,
+            do_sample=request.do_sample,
+            temperature=request.temperature,
+            top_p=request.top_p,
+        )
+
+        generated_text = extract_assistant_response(outputs, prompt)
+        response_time = time.time() - start_time
+
+        return GenerationResponse(
+            generated_text=generated_text,
+            response_time=response_time
+        )
+
+    except Exception as e:
+        print(f"日本語生成エンドポイントでエラー: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="日本語文章の生成に失敗しました")
+
 def load_model_task():
     """モデルを読み込むバックグラウンドタスク"""
     global model
