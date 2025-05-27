@@ -172,6 +172,7 @@ def test_model_reproducibility(sample_data, preprocessor):
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
 
+
 def test_model_regression_check(train_model):
     """過去モデルと比較して精度劣化がないかを検証"""
     model, X_test, y_test = train_model
@@ -192,6 +193,6 @@ def test_model_regression_check(train_model):
 
     print(f"新モデル精度: {new_accuracy:.4f}, 過去モデル精度: {old_accuracy:.4f}")
 
-    assert new_accuracy >= old_accuracy - 0.01, (
-        f"新モデルの精度が劣化しています（過去: {old_accuracy:.4f} → 新: {new_accuracy:.4f}）"
-    )
+    assert (
+        new_accuracy >= old_accuracy - 0.01
+    ), f"新モデルの精度が劣化しています（過去: {old_accuracy:.4f} → 新: {new_accuracy:.4f}）"
